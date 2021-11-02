@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title></title>
+<style type="text/css">
+#outgoing {
+    width: 600px;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+</style>
+</head>
+<body>
+	<video></video>
+<script type="text/javascript">
+	navigator.mediaDevices
+	.getUserMedia({
+	video: true,
+	audio: true
+	})
+	.then(gotMedia)
+	.catch(() => {});
+	
+	function gotMedia(stream) {
+	const initiator = new SimplePeer({
+	initiator: true,
+	stream
+	});
+	
+	const guest = new SimplePeer();
+	
+	initiator.on("signal", (data) => {
+	console.log("initiator signal data", data);
+	guest.signal(data);
+	});
+	
+	guest.on("signal", (data) => {
+	initiator.signal(data);
+	});
+	
+	guest.on("stream", (stream) => {
+	console.log("guest stream", stream);
+	
+	// got remote video stream, now let's show it in a video tag
+	const video = document.querySelector("video");
+	
+	if ("srcObject" in video) {
+	video.srcObject = stream;
+	} else {
+	// for older browsers
+	video.src = window.URL.createObjectURL(stream);
+	}
+	
+	video.play();
+	});
+	}
+	
+</script>
+</body>
+</html>
